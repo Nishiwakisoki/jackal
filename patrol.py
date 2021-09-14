@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # BEGIN ALL
 import rospy, cv2, cv_bridge, numpy
-import time
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Int32
@@ -14,7 +13,7 @@ class patrol:
   self.image_sub = rospy.Subscriber('/usb_cam/image_raw', Image, self.image_callback)
   self.image_pub = rospy.Publisher('/findline_img', Image, queue_size=1)
   self.cent_pub = rospy.Publisher('/center_line',Int32, queue_size=1)
-  
+  self.red_pub = rospy.Publisher('/red_detect',Int32, queue_size=1)
 
  def image_callback(self, msg):
   #while not rospy.is_shutdown():
@@ -30,7 +29,17 @@ class patrol:
   upper_red = numpy.array([10, 255, 255])
   mask2 = cv2.inRange(hsv, lower_red, upper_red)
   # END FILTER
-    		
+  lower_green = numpy.array([0, 100, 100])
+  upper_green = numpy.array([10, 255, 255])
+  mask3 = cv2.inRange(hsv, lower_green, upper_green)
+
+  lower_blue = numpy.array([0, 100, 100])
+  upper_blue = numpy.array([10, 255, 255])
+  mask4 = cv2.inRange(hsv, lower_blue, upper_blue)
+
+  lower_blue = numpy.array([0, 100, 100])
+  upper_blue = numpy.array([10, 255, 255])
+  mask4 = cv2.inRange(hsv, lower_blue, upper_blue)
   # BEGIN CROP
   h, w, d = image.shape
   search_top = 3*h/4
@@ -54,11 +63,15 @@ class patrol:
   M1 = cv2.moments(mask1)
   M2 = cv2.moments(mask2)
 
-  if (M1['m00'] > 100 and M2['m00'] < 100):
+  if (M1['m00'] > 200000 and M2['m00'] < 200000):
    cx = int(M1['m10']/M1['m00'])
    cy = int(M1['m01']/M1['m00'])
    cv2.circle(image, (cx, cy), 20, (0,0,255), -1)
    self.cent_pub.publish(cx)
+
+  if (M2['m00'] >= 200000):
+   red = 1
+   self.red_pub.publish(red)
 
   findline_img = self.bridge.cv2_to_imgmsg(image,encoding='bgr8')
   self.image_pub.publish(findline_img)
