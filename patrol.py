@@ -14,7 +14,9 @@ class patrol:
   self.image_pub = rospy.Publisher('/findline_img', Image, queue_size=1)
   self.cent_pub = rospy.Publisher('/center_line',Int32, queue_size=1)
   self.red_pub = rospy.Publisher('/red_detect',Int32, queue_size=1)
-
+  self.green_pub = rospy.Publisher('/green_detect',Int32, queue_size=1)
+  self.blue_pub = rospy.Publisher('/blue_detect',Int32, queue_size=1)
+  
  def image_callback(self, msg):
   #while not rospy.is_shutdown():
   #rate = rospy.Rate(2)
@@ -25,21 +27,21 @@ class patrol:
   upper_yellow = numpy.array([40, 255, 255])
   mask1 = cv2.inRange(hsv, lower_yellow, upper_yellow)
   # BEGIN FILTER
-  lower_red = numpy.array([0, 100, 100])
+  lower_red = numpy.array([0, 180, 100])
   upper_red = numpy.array([10, 255, 255])
   mask2 = cv2.inRange(hsv, lower_red, upper_red)
-  # END FILTER
-  lower_green = numpy.array([0, 100, 100])
-  upper_green = numpy.array([10, 255, 255])
+
+  lower_green = numpy.array([37, 100, 100])
+  upper_green = numpy.array([80, 255, 255])
   mask3 = cv2.inRange(hsv, lower_green, upper_green)
 
-  lower_blue = numpy.array([0, 100, 100])
-  upper_blue = numpy.array([10, 255, 255])
+  lower_blue = numpy.array([85, 100, 60])
+  upper_blue = numpy.array([120, 255, 255])
   mask4 = cv2.inRange(hsv, lower_blue, upper_blue)
 
-  lower_blue = numpy.array([0, 100, 100])
-  upper_blue = numpy.array([10, 255, 255])
-  mask4 = cv2.inRange(hsv, lower_blue, upper_blue)
+  #lower_blue = numpy.array([0, 100, 100])
+  #upper_blue = numpy.array([10, 255, 255])
+  #mask4 = cv2.inRange(hsv, lower_blue, upper_blue)
   # BEGIN CROP
   h, w, d = image.shape
   search_top = 3*h/4
@@ -59,9 +61,21 @@ class patrol:
   mask2[search_bot:h, 0:w] = 0
   mask2[search_top:search_bot, 0:serch_red] = 0
   mask2 = cv2.morphologyEx(mask2, cv2.MORPH_OPEN, kernel)
-    
+
+  mask3[0:search_top, 0:w] = 0
+  mask3[search_bot:h, 0:w] = 0
+  mask3[search_top:search_bot, 0:serch_red] = 0
+  mask3 = cv2.morphologyEx(mask3, cv2.MORPH_OPEN, kernel)
+
+  mask4[0:search_top, 0:w] = 0
+  mask4[search_bot:h, 0:w] = 0
+  mask4[search_top:search_bot, 0:serch_red] = 0
+  mask4 = cv2.morphologyEx(mask4, cv2.MORPH_OPEN, kernel)
+   
   M1 = cv2.moments(mask1)
   M2 = cv2.moments(mask2)
+  M3 = cv2.moments(mask3)
+  M4 = cv2.moments(mask4)
 
   if (M1['m00'] > 200000 and M2['m00'] < 200000):
    cx = int(M1['m10']/M1['m00'])
@@ -73,6 +87,14 @@ class patrol:
    red = 1
    self.red_pub.publish(red)
 
+  if (M3['m00'] >= 200000):
+   green = 1
+   self.green_pub.publish(green)
+
+  if (M4['m00'] >= 200000):
+   blue = 1
+   self.blue_pub.publish(blue)
+
   findline_img = self.bridge.cv2_to_imgmsg(image,encoding='bgr8')
   self.image_pub.publish(findline_img)
 
@@ -80,6 +102,8 @@ class patrol:
   cv2.imshow("window", image)
   cv2.imshow("window2", mask1)
   cv2.imshow("window3", mask2)
+  cv2.imshow("window2", mask3)
+  cv2.imshow("window3", mask4)
   cv2.waitKey(3)
   #rate.sleep()
 
