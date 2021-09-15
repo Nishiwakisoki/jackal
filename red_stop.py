@@ -6,21 +6,27 @@ from geometry_msgs.msg import Twist
 from std_msgs.msg import Int32
 import time
 
-count=0
-count_go=0
+count = 0
+count_t = 0
 
 def imageCb(msg):
- count += 1
- if (count == 1 ):
+ global count
+ global count_t
+ if (count == 0 ):
+  count = 1
   twist.linear.x = 0.0
   twist.angular.z = 0.0
   pub.publish(twist)
   time.sleep(2)
-  for count_go in range(30):
+  while (count_t < 30):
    twist.linear.x = 0.1
    twist.angular.z = 0.0
    pub.publish(twist)
-   count_go +=1
+   time.sleep(0.1)
+   count_t += 1
+   rospy.loginfo("count:%d",count)
+   rospy.loginfo("count_t:%d",count_t)
+
 
 
 if __name__=='__main__':
