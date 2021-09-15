@@ -23,12 +23,12 @@ class patrol:
   kernel = numpy.ones((3,3),numpy.uint8)
   image = self.bridge.imgmsg_to_cv2(msg,desired_encoding='bgr8')
   hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-  lower_yellow = numpy.array([20, 10, 100])
+  lower_yellow = numpy.array([20, 40, 100])
   upper_yellow = numpy.array([40, 255, 255])
   mask1 = cv2.inRange(hsv, lower_yellow, upper_yellow)
   # BEGIN FILTER
-  lower_red = numpy.array([0, 180, 100])
-  upper_red = numpy.array([10, 255, 255])
+  lower_red = numpy.array([0, 60, 100])
+  upper_red = numpy.array([12, 255, 255])
   mask2 = cv2.inRange(hsv, lower_red, upper_red)
 
   lower_green = numpy.array([37, 100, 100])
@@ -77,7 +77,7 @@ class patrol:
   M3 = cv2.moments(mask3)
   M4 = cv2.moments(mask4)
 
-  if (M1['m00'] > 200000 and M2['m00'] < 200000):
+  if (M1['m00'] > 200000 and M2['m00'] < 200000 and M3['m00'] < 200000 and M4['m00'] < 200000):
    cx = int(M1['m10']/M1['m00'])
    cy = int(M1['m01']/M1['m00'])
    cv2.circle(image, (cx, cy), 20, (0,0,255), -1)
@@ -102,8 +102,8 @@ class patrol:
   cv2.imshow("window", image)
   cv2.imshow("window2", mask1)
   cv2.imshow("window3", mask2)
-  cv2.imshow("window2", mask3)
-  cv2.imshow("window3", mask4)
+  cv2.imshow("window4", mask3)
+  cv2.imshow("window5", mask4)
   cv2.waitKey(3)
   #rate.sleep()
 

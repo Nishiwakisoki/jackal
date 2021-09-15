@@ -25,10 +25,10 @@ def imageCb(msg):
      twist.linear.x = 0.1
      twist.angular.z = 0.0
      pub.publish(twist)
-   count_go +=1
+    count_go += 1
 
 if __name__=='__main__':
- rospy.init_node('red_stop')
+ rospy.init_node('green_turn')
  twist = Twist()
  pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
  sub = rospy.Subscriber('/green_turn', Int32, imageCb)

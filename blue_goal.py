@@ -24,8 +24,8 @@ def imageCb(msg):
 
 
 if __name__=='__main__':
- rospy.init_node('red_stop')
+ rospy.init_node('blue_goal')
  twist = Twist()
  pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
- sub = rospy.Subscriber('/red_detect', Int32, imageCb)
+ sub = rospy.Subscriber('/blue_detect', Int32, imageCb)
  rospy.spin()
