@@ -1,0 +1,1 @@
+robotコンテスト用のpythonコード
